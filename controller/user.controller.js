@@ -6,14 +6,15 @@ export const checkForUserName = (request, response, next) => {
 
   User.hasUserName(username)
     .then((result) => {
-      if (result.length > 0) {
-        return response.json({
-          success: false,
-          message: "Username already exists",
-        });
-      } else {
-        return response.json({ success: true, message: "Username available" });
-      }
+      console.log(result.length);
+      if (result.length === 0)
+        return response
+          .status(200)
+          .json({ success: true, message: "Username is available" });
+      else
+        return response
+          .status(200)
+          .json({ success: false, message: "Username is already taken" });
     })
     .catch((err) => {
       console.error("Error checking username:", err);
@@ -107,9 +108,9 @@ export const signOut = (req, response, next) => {
 };
 
 export const signUp = (req, response, next) => {
-  //   console.log(req.body);
-  let { name, email, phone, password, userName } = req.body;
-  let user = new User(null, name, email, phone, password, userName);
+  console.log(req.body);
+  let { name, email, phone, password, username } = req.body;
+  let user = new User(null, name, email, phone, password, username);
 
   user
     .create()

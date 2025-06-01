@@ -43,7 +43,7 @@
             <input
               type="text"
               id="userName"
-              name="user"
+              name="username"
               required
               onblur="validateUsername(this.value)"
             />
@@ -602,6 +602,7 @@
 
       // Username validation function
       function validateUsername(username) {
+        if (!username.trim()) return;
         // Show loading indicator
         const userNameInput = document.getElementById("userName");
         const userNameError = document.getElementById("userNameError");

@@ -29,7 +29,7 @@ const router = express.Router();
 
 router.post("/signup", signUp);
 router.post("/signin", signIn);
-router.get("/validate-username/:userName", checkForUserName);
+router.get("/validate-username/:username", checkForUserName);
 router.get("/sign-out", signOut);
 router.get("/profile", auth, profilePage);
 router.post("/profile", auth, upload.single("profile"), uploadProfile);

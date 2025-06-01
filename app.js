@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 
 app.use("/", IndexRouter);
 app.use("/user", UserRouter);
-// app.post("/auto-login", autoLogin);
+app.post("/auto-login", autoLogin);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
