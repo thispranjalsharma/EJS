@@ -1,6 +1,8 @@
 import express from "express";
 import IndexRouter from "./routes/index.route.js";
 import UserRouter from "./routes/user.route.js";
+import ChatRouter from "./routes/chat.route.js";
+
 import bodyParser from "body-parser";
 import session from "express-session";
 import { autoLogin } from "./routes/auto-login.route.js";
@@ -25,6 +27,7 @@ app.use((req, res, next) => {
 
 app.use("/", IndexRouter);
 app.use("/user", UserRouter);
+app.use("/chat", ChatRouter);
 app.post("/auto-login", autoLogin);
 
 app.listen(3000, () => {

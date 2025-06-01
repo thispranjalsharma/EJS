@@ -31,10 +31,11 @@
       <%-include("__header.ejs") %>
 
       <div class="container mt-5">
-        <table class="table table-bordered mt-4">
+        <table class="table table-bordered mt-4" border="1px solid black">
           <thead>
             <tr>
-              <th>Image</th>
+              <th>Post</th>
+              <th>User</th>
               <th>Caption</th>
               <th>Date</th>
             </tr>
@@ -53,7 +54,7 @@
                 />
               </td>
               <td>
-                <strong>User ID:</strong> <%= post.userId %><br />
+                <strong> <%= post.userId %></strong><br />
                 <img
                   src="/user_post/<%= post.profile %>"
                   width="40"
@@ -62,12 +63,9 @@
                   onerror="this.src='/default-profile.png'"
                 />
               </td>
+              <td><%= post.caption %><br /></td>
               <td>
-                <%= post.caption %><br />
-                <small
-                  ><%= post.created_at ? post.created_at.toLocaleString() : ''
-                  %></small
-                >
+                <%= post.created_at ? post.created_at.toLocaleString() : '' %>
               </td>
             </tr>
             <% }) %> <% } else { %>

@@ -18,6 +18,7 @@
           <tr>
             <th>Image</th>
             <th>User Name</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -33,6 +34,9 @@
               />
             </td>
             <td><%= post.name %></td>
+            <td>
+              <a href="/chat/<%= post.id %>" class="btn btn-primary">Chat</a>
+            </td>
           </tr>
           <% }) %>
         </tbody>

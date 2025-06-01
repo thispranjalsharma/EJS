@@ -28,7 +28,7 @@ class User {
       pool.getConnection((err, con) => {
         if (!err) {
           let sql =
-            "SELECT post.image AS postImage, post.caption, post.created_at, user.id AS userId, user.profile FROM post JOIN user ON  post.user_id = user.id ORDER BY post.id DESC";
+            "SELECT post.image AS postImage, post.caption, post.created_at, user.name AS userId, user.profile FROM post JOIN user ON  post.user_id = user.id ORDER BY post.id DESC";
           con.query(sql, (err, result) => {
             con.release();
             err ? reject(err) : resolve(result);
