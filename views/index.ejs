@@ -40,21 +40,34 @@
             </tr>
           </thead>
           <tbody>
-            <% if (typeof posts !== 'undefined') { %> <% posts.forEach(post => {
-            %>
+            <% if (typeof posts !== 'undefined' && posts.length > 0) { %> <%
+            posts.forEach(post => { %>
             <tr>
               <td>
                 <img
-                  src="/post_uploads/<%= post.image %>"
+                  src="/post_uploads/<%= post.postImage %>"
                   width="80"
                   height="80"
                   style="object-fit: cover"
                   onerror="this.src='/default.png'"
                 />
               </td>
-              <td><%= post.caption %></td>
               <td>
-                <%= post.created_at ? post.created_at.toLocaleString() : '' %>
+                <strong>User ID:</strong> <%= post.userId %><br />
+                <img
+                  src="/user_post/<%= post.profile %>"
+                  width="40"
+                  height="40"
+                  class="rounded-circle"
+                  onerror="this.src='/default-profile.png'"
+                />
+              </td>
+              <td>
+                <%= post.caption %><br />
+                <small
+                  ><%= post.created_at ? post.created_at.toLocaleString() : ''
+                  %></small
+                >
               </td>
             </tr>
             <% }) %> <% } else { %>
