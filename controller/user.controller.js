@@ -43,7 +43,7 @@ export const userPosts = (request, response, next) => {
 
 export const uploadPostImg = (request, response, next) => {
   console.log("uploadPostImage");
-  return response.render("uploadPosts.ejs");
+  return response.render("uploadPost.ejs");
 };
 
 export const uploadPost = (req, response, next) => {
@@ -108,7 +108,7 @@ export const signOut = (req, response, next) => {
 };
 
 export const signUp = (req, response, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   let { name, email, phone, password, username } = req.body;
   let user = new User(null, name, email, phone, password, username);
 
@@ -145,10 +145,13 @@ export const signIn = (req, resp, next) => {
 };
 
 export const Userchats = (request, resp, next) => {
+  const userId = request.session.currentUser.id;
   User.getAllUsersData()
     .then((result) => {
+      // console.log(result);
+      const filteredResult = result.filter((user) => user.id !== userId);
       return resp.render("chat.ejs", {
-        users: result,
+        users: filteredResult,
         currentUser: request.session.currentUser,
         isLoggedIn: request.session.isLoggedIn,
       });

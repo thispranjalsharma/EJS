@@ -11,36 +11,456 @@
   <body>
     <%-include("__header.ejs") %>
 
-    <div class="container mt-5">
-      <h2 class="text-center">All USers</h2>
-      <table class="table table-bordered mt-4">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>User Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% users.forEach(post => { %>
-          <tr>
-            <td>
+    <div class="users-container">
+      <div class="users-header">
+        <h2 class="users-title">All Users</h2>
+        <div class="users-subtitle">Connect and start conversations</div>
+      </div>
+
+      <div class="users-grid">
+        <% users.forEach(post => { %>
+        <div class="user-card">
+          <div class="user-card-inner">
+            <div class="user-image-wrapper">
               <img
                 src="/user_post/<%= post?.profile %>"
-                width="80"
-                height="80"
-                style="object-fit: cover"
-                alt="oo"
+                alt="<%= post.name %>"
+                class="user-image"
               />
-            </td>
-            <td><%= post.name %></td>
-            <td>
-              <a href="/chat/<%= post.id %>" class="btn btn-primary">Chat</a>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
+              <div class="user-status"></div>
+            </div>
+            <div class="user-info">
+              <h3 class="user-name"><%= post.name %></h3>
+              <div class="user-meta">Ready to chat</div>
+            </div>
+            <div class="user-actions">
+              <a href="/chat/<%= post.id %>" class="chat-btn">
+                <span class="chat-btn-icon">💬</span>
+                Start Chat
+              </a>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
     </div>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Futura:wght@300;400;500;600;700&display=swap");
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Futura", "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .users-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .users-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: slideDown 0.8s ease-out;
+      }
+
+      .users-title {
+        font-family: "Futura", "Arial", sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 10px;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        letter-spacing: -1px;
+        position: relative;
+      }
+
+      .users-title::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        border-radius: 2px;
+        animation: expandLine 1s ease-out 0.5s both;
+      }
+
+      .users-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 400;
+        letter-spacing: 0.5px;
+      }
+
+      .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        animation: fadeInUp 1s ease-out 0.3s both;
+      }
+
+      .user-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        animation: slideInUp 0.6s ease-out both;
+      }
+
+      .user-card:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .user-card:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .user-card:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .user-card:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .user-card:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .user-card:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+
+      .user-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transition: left 0.6s;
+      }
+
+      .user-card:hover::before {
+        left: 100%;
+      }
+
+      .user-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .user-card-inner {
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .user-image-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+        animation: profileFloat 3s ease-in-out infinite;
+      }
+
+      .user-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.8);
+        object-fit: cover;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .user-card:hover .user-image {
+        transform: scale(1.1) rotate(5deg);
+        border-color: #fff;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .user-status {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        background: #4ade80;
+        border: 3px solid white;
+        border-radius: 50%;
+        animation: statusPulse 2s infinite;
+        box-shadow: 0 2px 10px rgba(74, 222, 128, 0.5);
+      }
+
+      .user-info {
+        margin-bottom: 25px;
+      }
+
+      .user-name {
+        font-family: "Futura", "Arial", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        letter-spacing: 0.5px;
+      }
+
+      .user-meta {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        font-weight: 400;
+        letter-spacing: 0.3px;
+      }
+
+      .user-actions {
+        position: relative;
+      }
+
+      .chat-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        color: white;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border: none;
+        box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+      }
+
+      .chat-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .chat-btn:hover::before {
+        left: 100%;
+      }
+
+      .chat-btn:hover {
+        background: linear-gradient(45deg, #44a08d, #4ecdc4);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(78, 205, 196, 0.4);
+        color: white;
+        text-decoration: none;
+      }
+
+      .chat-btn:active {
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      .chat-btn-icon {
+        font-size: 1.2rem;
+        animation: iconBounce 2s infinite;
+      }
+
+      /* Animations */
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px) scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes expandLine {
+        from {
+          width: 0;
+        }
+        to {
+          width: 80px;
+        }
+      }
+
+      @keyframes profileFloat {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+
+      @keyframes statusPulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.7;
+          transform: scale(1.1);
+        }
+      }
+
+      @keyframes iconBounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-3px);
+        }
+        60% {
+          transform: translateY(-2px);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .users-container {
+          padding: 30px 15px;
+        }
+
+        .users-title {
+          font-size: 2.5rem;
+        }
+
+        .users-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .user-card-inner {
+          padding: 25px;
+        }
+
+        .user-image {
+          width: 80px;
+          height: 80px;
+        }
+
+        .chat-btn {
+          padding: 12px 25px;
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .users-title {
+          font-size: 2rem;
+        }
+
+        .users-subtitle {
+          font-size: 1rem;
+        }
+
+        .user-card-inner {
+          padding: 20px;
+        }
+
+        .user-image {
+          width: 70px;
+          height: 70px;
+        }
+
+        .user-name {
+          font-size: 1.3rem;
+        }
+
+        .chat-btn {
+          padding: 10px 20px;
+          font-size: 0.85rem;
+        }
+      }
+
+      /* Focus states for accessibility */
+      .chat-btn:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.8);
+        outline-offset: 2px;
+      }
+
+      /* Hover effect for the entire container */
+      .users-container:hover .user-card:not(:hover) {
+        opacity: 0.7;
+        transform: scale(0.95);
+      }
+
+      /* Loading animation for images */
+      .user-image {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+      }
+    </style>
   </body>
 </html>

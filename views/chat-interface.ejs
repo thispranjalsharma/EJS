@@ -7,72 +7,798 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     />
-    <style>
-      body {
-        background: #f4f4f4;
-      }
-      .chat-box {
-        max-width: 800px;
-        margin: auto;
-        margin-top: 50px;
-        background: #fff;
-        border-radius: 10px;
-        padding: 20px;
-        height: 600px;
-        overflow-y: scroll;
-      }
-      .msg {
-        display: flex;
-        margin-bottom: 10px;
-      }
-      .msg.sent {
-        justify-content: flex-end;
-      }
-      .msg.received {
-        justify-content: flex-start;
-      }
-      .bubble {
-        padding: 10px 15px;
-        border-radius: 15px;
-        max-width: 60%;
-        background-color: #e2e8f0;
-      }
-      .sent .bubble {
-        background-color: #38bdf8;
-        color: white;
-      }
-      .chat-form {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-      }
-    </style>
   </head>
   <body>
     <%- include("__header.ejs") %>
-    <div class="chat-box">
-      <% messages.forEach(msg => { %>
-      <div class="msg <%= msg.sender_id === userId ? 'sent' : 'received' %>">
-        <div class="bubble">
-          <%= msg.message %>
-          <div class="text-muted small mt-1" style="font-size: 10px">
-            <%= new Date(msg.created_at).toLocaleTimeString() %>
+
+    <span id="friendId" style="display: none"><%= friendId %></span>
+    <span id="userId" style="display: none"><%= userId %></span>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-user-info">
+          <div class="chat-avatar">
+            <div class="avatar-circle">
+              <span class="avatar-initial">👤</span>
+            </div>
+            <div class="online-indicator"></div>
+          </div>
+          <div class="chat-user-details">
+            <h3 class="chat-user-name">Chat Conversation</h3>
+            <p class="chat-user-status">Online now</p>
           </div>
         </div>
+        <div class="chat-actions">
+          <button class="action-btn" id="emoji-btn">😊</button>
+          <button class="action-btn" id="settings-btn">⚙️</button>
+        </div>
       </div>
-      <% }) %>
 
-      <form class="chat-form" action="/chat/send" method="POST">
-        <input type="hidden" name="to" value="<%= friendId %>" />
-        <input
-          type="text"
-          name="message"
-          class="form-control"
-          placeholder="Type a message..."
-          required
-        />
-        <button class="btn btn-primary">Send</button>
-      </form>
+      <div class="chat-messages" id="chatMessages">
+        <% messages.forEach(msg => { %>
+        <div
+          class="message-wrapper <%= msg.sender_id === userId ? 'sent' : 'received' %>"
+        >
+          <div class="message-bubble">
+            <div class="message-content">
+              <% if (msg.message) { %>
+              <p class="message-text"><%= msg.message %></p>
+              <% } %> <% if (msg.media_path) { %>
+              <div class="message-media">
+                <img
+                  src="/uploads/<%= msg.media_path %>"
+                  alt="Media"
+                  class="media-image"
+                />
+              </div>
+              <% } %>
+            </div>
+            <div class="message-time">
+              <%= new Date(msg.created_at).toLocaleTimeString([], {hour:
+              '2-digit', minute:'2-digit'}) %>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator" style="display: none">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="typing-text">Someone is typing...</span>
+      </div>
+
+      <div class="chat-input-container">
+        <form
+          class="chat-input-form"
+          id="chatForm"
+          action="/chat/send"
+          method="POST"
+        >
+          <input type="hidden" name="to" value="<%= friendId %>" />
+
+          <div class="input-wrapper">
+            <button type="button" class="attachment-btn" id="attachmentBtn">
+              📎
+            </button>
+            <input
+              type="file"
+              name="media"
+              id="mediaInput"
+              accept="image/*,video/*"
+              style="display: none"
+            />
+
+            <input
+              type="text"
+              name="message"
+              id="messageInput"
+              class="message-input"
+              placeholder="Type your message..."
+              autocomplete="off"
+            />
+
+            <button type="submit" class="send-btn" id="sendBtn">
+              <span class="send-icon">➤</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <div class="emoji-picker-container" id="emojiPicker" style="display: none">
+      <emoji-picker></emoji-picker>
+    </div>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Futura:wght@300;400;500;600;700&display=swap");
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Futura", "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .chat-container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.8s ease-out;
+        height: calc(100vh - 140px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        backdrop-filter: blur(10px);
+      }
+
+      .chat-user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .chat-avatar {
+        position: relative;
+      }
+
+      .avatar-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid rgba(255, 255, 255, 0.8);
+        animation: profilePulse 2s infinite;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .avatar-initial {
+        font-size: 24px;
+        color: white;
+      }
+
+      .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        background: #4ade80;
+        border: 2px solid white;
+        border-radius: 50%;
+        animation: statusBlink 2s infinite;
+      }
+
+      .chat-user-details h3 {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .chat-user-status {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      .chat-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+      }
+
+      .action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        scroll-behavior: smooth;
+      }
+
+      .chat-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .message-wrapper {
+        display: flex;
+        margin-bottom: 10px;
+        animation: messageSlide 0.4s ease-out;
+      }
+
+      .message-wrapper.sent {
+        justify-content: flex-end;
+      }
+
+      .message-wrapper.received {
+        justify-content: flex-start;
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        position: relative;
+      }
+
+      .message-content {
+        padding: 15px 20px;
+        border-radius: 20px;
+        position: relative;
+        word-wrap: break-word;
+        transition: all 0.3s ease;
+      }
+
+      .sent .message-content {
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        color: white;
+        border-bottom-right-radius: 8px;
+        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+      }
+
+      .received .message-content {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border-bottom-left-radius: 8px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-text {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.4;
+        letter-spacing: 0.3px;
+      }
+
+      .message-media {
+        margin-top: 10px;
+      }
+
+      .media-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+
+      .media-image:hover {
+        transform: scale(1.02);
+        cursor: pointer;
+      }
+
+      .message-time {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-top: 5px;
+        text-align: right;
+      }
+
+      .received .message-time {
+        text-align: left;
+      }
+
+      .typing-indicator {
+        padding: 10px 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+      }
+
+      .typing-dots {
+        display: flex;
+        gap: 4px;
+      }
+
+      .typing-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        animation: typingDots 1.4s infinite;
+      }
+
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      .chat-input-container {
+        padding: 20px 25px;
+        background: rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .input-wrapper {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 8px;
+        gap: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .input-wrapper:focus-within {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      }
+
+      .attachment-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 18px;
+      }
+
+      .attachment-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: rotate(15deg);
+      }
+
+      .message-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 16px;
+        padding: 12px 0;
+        outline: none;
+        font-family: inherit;
+      }
+
+      .message-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .send-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+      }
+
+      .send-btn:hover {
+        background: linear-gradient(45deg, #44a08d, #4ecdc4);
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+      }
+
+      .send-btn:active {
+        transform: scale(0.95);
+      }
+
+      .send-icon {
+        font-size: 18px;
+        transform: rotate(-45deg);
+      }
+
+      .emoji-picker-container {
+        position: fixed;
+        bottom: 120px;
+        right: 50px;
+        z-index: 1000;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: popIn 0.3s ease-out;
+      }
+
+      /* Animations */
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(50px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes messageSlide {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes typingDots {
+        0%,
+        60%,
+        100% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        30% {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+      }
+
+      @keyframes profilePulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes statusBlink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      @keyframes popIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .chat-container {
+          margin: 10px;
+          height: calc(100vh - 120px);
+          border-radius: 20px;
+        }
+
+        .chat-header {
+          padding: 15px 20px;
+        }
+
+        .chat-user-details h3 {
+          font-size: 1.1rem;
+        }
+
+        .chat-messages {
+          padding: 15px 20px;
+        }
+
+        .message-bubble {
+          max-width: 85%;
+        }
+
+        .message-content {
+          padding: 12px 16px;
+        }
+
+        .chat-input-container {
+          padding: 15px 20px;
+        }
+
+        .emoji-picker-container {
+          right: 20px;
+          bottom: 100px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .chat-container {
+          margin: 5px;
+          border-radius: 15px;
+        }
+
+        .avatar-circle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .avatar-initial {
+          font-size: 20px;
+        }
+
+        .action-btn {
+          width: 35px;
+          height: 35px;
+          font-size: 14px;
+        }
+
+        .message-content {
+          padding: 10px 14px;
+        }
+
+        .message-text {
+          font-size: 14px;
+        }
+      }
+
+      /* Custom scrollbar for webkit browsers */
+      .chat-messages {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+      }
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/emoji-picker-element"
+    ></script>
+
+    <script>
+      const socket = io();
+      const userId = parseInt(document.getElementById("userId").textContent);
+      const friendId = parseInt(
+        document.getElementById("friendId").textContent
+      );
+      const room = [userId, friendId].sort().join("_");
+      socket.emit("joinRoom", { userId, friendId });
+
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const chatForm = document.getElementById("chatForm");
+      const mediaInput = document.getElementById("mediaInput");
+      const attachmentBtn = document.getElementById("attachmentBtn");
+      const emojiBtn = document.getElementById("emoji-btn");
+      const emojiPicker = document.getElementById("emojiPicker");
+      const typingIndicator = document.getElementById("typingIndicator");
+
+      // Auto-scroll to bottom
+      function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // Initial scroll to bottom
+      setTimeout(scrollToBottom, 100);
+
+      // Attachment button functionality
+      attachmentBtn.addEventListener("click", () => {
+        mediaInput.click();
+      });
+
+      // Emoji picker functionality
+      emojiBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        emojiPicker.style.display =
+          emojiPicker.style.display === "none" ? "block" : "none";
+      });
+
+      // Close emoji picker when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+          emojiPicker.style.display = "none";
+        }
+      });
+
+      // Emoji selection
+      document.addEventListener("emoji-click", (event) => {
+        messageInput.value += event.detail.unicode;
+        messageInput.focus();
+      });
+
+      // Form submission
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const message = messageInput.value.trim();
+        const mediaFile = mediaInput.files[0];
+
+        if (!message && !mediaFile) return;
+
+        // Add message to UI immediately
+        const messageWrapper = document.createElement("div");
+        messageWrapper.className = "message-wrapper sent";
+        messageWrapper.innerHTML = `
+          <div class="message-bubble">
+            <div class="message-content">
+              ${message ? `<p class="message-text">${message}</p>` : ""}
+              ${
+                mediaFile
+                  ? `<div class="message-media"><img src="${URL.createObjectURL(
+                      mediaFile
+                    )}" alt="Media" class="media-image" /></div>`
+                  : ""
+              }
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}</div>
+          </div>
+        `;
+
+        chatMessages.appendChild(messageWrapper);
+        scrollToBottom();
+
+        // Send to server
+        const formData = new FormData();
+        formData.append("to", friendId);
+        formData.append("message", message);
+        if (mediaFile) formData.append("media", mediaFile);
+
+        fetch("/chat/send", {
+          method: "POST",
+          body: formData,
+        });
+
+        socket.emit("sendMessage", {
+          sender_id: userId,
+          receiver_id: friendId,
+          message,
+          media: mediaFile?.name || null,
+        });
+
+        messageInput.value = "";
+        mediaInput.value = "";
+      });
+
+      // Socket message handling
+      socket.on("newMessage", (msg) => {
+        const messageWrapper = document.createElement("div");
+        messageWrapper.className = `message-wrapper ${
+          msg.sender_id === userId ? "sent" : "received"
+        }`;
+        messageWrapper.innerHTML = `
+          <div class="message-bubble">
+            <div class="message-content">
+              ${msg.message ? `<p class="message-text">${msg.message}</p>` : ""}
+              ${
+                msg.media
+                  ? `<div class="message-media"><img src="/uploads/${msg.media}" alt="Media" class="media-image" /></div>`
+                  : ""
+              }
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}</div>
+          </div>
+        `;
+
+        chatMessages.appendChild(messageWrapper);
+        scrollToBottom();
+      });
+
+      // Typing indicator
+      let typingTimer;
+      messageInput.addEventListener("input", () => {
+        socket.emit("typing", { room, userId });
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          socket.emit("stopTyping", { room, userId });
+        }, 1000);
+      });
+
+      socket.on("typing", (uid) => {
+        if (uid !== userId) {
+          typingIndicator.style.display = "flex";
+          scrollToBottom();
+        }
+      });
+
+      socket.on("stopTyping", (uid) => {
+        if (uid !== userId) {
+          typingIndicator.style.display = "none";
+        }
+      });
+
+      // Enter key to send message
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          chatForm.dispatchEvent(new Event("submit"));
+        }
+      });
+
+      // Focus input on load
+      window.addEventListener("load", () => {
+        messageInput.focus();
+      });
+    </script>
   </body>
 </html>

@@ -56,7 +56,7 @@ class User {
     return new Promise((resolve, reject) => {
       pool.getConnection((err, con) => {
         if (!err) {
-          let sql = "select * from post where user_id = ?";
+          let sql = "select * from post where user_id = ? order by id desc";
           con.query(sql, [userId], (err, result) => {
             con.release();
             err ? reject(err) : resolve(result);
