@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Posts</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <%-include("__header.ejs") %>
+
+    <div class="container mt-5">
+      <h2 class="text-center">Your Uploaded Posts</h2>
+      <table class="table table-bordered mt-4">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Caption</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% posts.forEach(post => { %>
+          <tr>
+            <td>
+              <img
+                src="/post_uploads/<%= post.image %>"
+                width="80"
+                height="80"
+                style="object-fit: cover"
+                onerror="this.src='/default.png'"
+              />
+            </td>
+            <td><%= post.caption %></td>
+            <td>
+              <%= post.created_at ? post.created_at.toLocaleString() : '' %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

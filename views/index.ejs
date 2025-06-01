@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>testing</title>
+    <style>
+      .main {
+        width: 100%;
+        height: 100vh;
+        border: 1px solid black;
+        text-align: center;
+      }
+      .card {
+        width: 120px;
+        height: 150px;
+        border: 1px solid rebeccapurple;
+        text-align: center;
+      }
+      .newImages > img {
+        padding: 10px;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <!-- header -->
+
+      <%-include("__header.ejs") %>
+
+      <div class="container mt-5">
+        <table class="table table-bordered mt-4">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Caption</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof posts !== 'undefined') { %> <% posts.forEach(post => {
+            %>
+            <tr>
+              <td>
+                <img
+                  src="/post_uploads/<%= post.image %>"
+                  width="80"
+                  height="80"
+                  style="object-fit: cover"
+                  onerror="this.src='/default.png'"
+                />
+              </td>
+              <td><%= post.caption %></td>
+              <td>
+                <%= post.created_at ? post.created_at.toLocaleString() : '' %>
+              </td>
+            </tr>
+            <% }) %> <% } else { %>
+            <tr>
+              <td colspan="3">No posts to show.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <%-include("footer.ejs") %>
+    </div>
+  </body>
+</html>

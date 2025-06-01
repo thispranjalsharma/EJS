@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Profile</title>
+    <%-include("__bootstrap.ejs")%>
+  </head>
+  <body>
+    <!-- header -->
+
+    <%-include("__header.ejs") %>
+
+    <h1>Profile Page .....</h1>
+
+    <div class="container mt-3">
+      <form
+        id="uploadForm"
+        action="/user/profile"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div class="form-group">
+          <input class="form-control" type="file" name="profile" />
+        </div>
+        <div class="form-group">
+          <button class="btn btn-warning">Submit</button>
+        </div>
+      </form>
+
+      <p>Name: <%=currentUser.name%></p>
+      <p>Email: <%=currentUser.email%></p>
+      <p>Phone: <%=currentUser.phone%></p>
+    </div>
+
+    <script>
+      const form = document.getElementById("uploadForm");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        const res = await fetch("/user/profile", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          const expiry = Date.now() + 24 * 60 * 60 * 1000; // 1 day
+          localStorage.setItem(
+            "auth",
+            JSON.stringify({ user: data.user, expiry })
+          );
+          alert("Profile updated!");
+          window.location.href = "/user/profile"; // Reload to reflect new profile image
+        } else {
+          alert(data.message || "Failed to update profile");
+        }
+      });
+    </script>
+  </body>
+</html>

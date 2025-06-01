@@ -1,0 +1,473 @@
+<header>
+  <nav class="navbar">
+    <div class="nav-container">
+      <ul class="nav-links">
+        <% if (isLoggedIn) { %>
+        <li class="profile-item">
+          <div class="profile-wrapper">
+            <img
+              src="/user_post/<%= currentUser.profile %>"
+              alt="Profile"
+              class="profile-image"
+            />
+            <div class="profile-status"></div>
+          </div>
+        </li>
+        <% } %>
+
+        <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="/about" class="nav-link">About</a></li>
+
+        <% if (!isLoggedIn) { %>
+        <li class="nav-item auth-item">
+          <a href="/sign-in" class="nav-link auth-link">Sign In</a>
+        </li>
+        <li class="nav-item auth-item">
+          <a href="/sign-up" class="nav-link auth-link signup-btn">Sign Up</a>
+        </li>
+        <% } else { %>
+        <li class="nav-item">
+          <a href="/user/profile" class="nav-link">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a href="/user/upload-post" class="nav-link">Upload Post</a>
+        </li>
+        <li class="nav-item">
+          <a href="/user/posts" class="nav-link">Your Posts</a>
+        </li>
+        <li class="nav-item">
+          <a href="/user/chat" class="nav-link chat-link">
+            <span class="chat-icon">💬</span>
+            Chats
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="javascript:void(0)"
+            onclick="signOut()"
+            class="nav-link signout-btn"
+          >
+            <span class="signout-icon">🚪</span>
+            Sign Out
+          </a>
+        </li>
+        <% } %>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Futura:wght@300;400;500;600;700&display=swap");
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .navbar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(102, 126, 234, 0.9) 0%,
+      rgba(118, 75, 162, 0.9) 100%
+    );
+    z-index: -1;
+  }
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 0;
+    flex-wrap: wrap;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .profile-item {
+    margin-right: 20px;
+    order: -1;
+  }
+
+  .profile-wrapper {
+    position: relative;
+    display: inline-block;
+    animation: profilePulse 2s infinite;
+  }
+
+  .profile-image {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    object-fit: cover;
+  }
+
+  .profile-image:hover {
+    transform: scale(1.1) rotate(5deg);
+    border-color: #fff;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #4ade80;
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: statusBlink 2s infinite;
+  }
+
+  .nav-link {
+    font-family: "Futura", "Arial", sans-serif;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-link::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .nav-link:hover::before {
+    left: 100%;
+  }
+
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    color: #fff;
+  }
+
+  .auth-link {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .auth-link:hover {
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .signup-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .signup-btn:hover {
+    background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4);
+  }
+
+  .chat-link {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    border: none;
+  }
+
+  .chat-link:hover {
+    background: linear-gradient(45deg, #44a08d, #4ecdc4);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .chat-icon {
+    font-size: 18px;
+    animation: bounce 2s infinite;
+  }
+
+  .signout-btn {
+    background: linear-gradient(45deg, #ff4757, #c44569);
+    border: none;
+  }
+
+  .signout-btn:hover {
+    background: linear-gradient(45deg, #c44569, #ff4757);
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .signout-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+  }
+
+  .signout-btn:hover .signout-icon {
+    transform: rotate(20deg);
+  }
+
+  /* Animations */
+  @keyframes profilePulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes statusBlink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes bounce {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-5px);
+    }
+    60% {
+      transform: translateY(-3px);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .nav-item {
+    animation: slideIn 0.6s ease forwards;
+  }
+
+  .nav-item:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .nav-item:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .nav-item:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .nav-item:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  .nav-item:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+  .nav-item:nth-child(6) {
+    animation-delay: 0.6s;
+  }
+  .nav-item:nth-child(7) {
+    animation-delay: 0.7s;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .nav-links {
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px 0;
+    }
+
+    .profile-item {
+      order: 0;
+      margin-right: 0;
+      margin-bottom: 15px;
+    }
+
+    .nav-link {
+      padding: 10px 25px;
+      font-size: 15px;
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .nav-container {
+      padding: 0 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nav-link {
+      padding: 8px 20px;
+      font-size: 14px;
+    }
+
+    .profile-image {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  /* Hover effects for the entire navbar */
+  .navbar:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Focus states for accessibility */
+  .nav-link:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+
+  .profile-image:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  // Auto login if localStorage is valid
+  (function () {
+    const auth = JSON.parse(localStorage.getItem("auth"));
+    if (auth && auth.expiry > Date.now()) {
+      fetch("/auto-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: auth.user }),
+      });
+    } else {
+      localStorage.removeItem("auth");
+      window.location.href = "/sign-in";
+    }
+  })();
+
+  // Manual sign-out logic with smooth animation
+  function signOut() {
+    // Add loading state to sign out button
+    const signOutBtn = document.querySelector(".signout-btn");
+    if (signOutBtn) {
+      signOutBtn.style.opacity = "0.7";
+      signOutBtn.style.pointerEvents = "none";
+      signOutBtn.innerHTML =
+        '<span class="signout-icon">⏳</span> Signing Out...';
+    }
+
+    // Clear local storage
+    localStorage.removeItem("auth");
+
+    // Call backend sign-out
+    fetch("/user/sign-out", {
+      method: "POST",
+    })
+      .then(() => {
+        // Add fade out animation before redirect
+        document.body.style.transition = "opacity 0.3s ease";
+        document.body.style.opacity = "0";
+
+        setTimeout(() => {
+          // Redirect to homepage after logout
+          window.location.href = "/";
+        }, 300);
+      })
+      .catch(() => {
+        // Reset button state on error
+        if (signOutBtn) {
+          signOutBtn.style.opacity = "1";
+          signOutBtn.style.pointerEvents = "auto";
+          signOutBtn.innerHTML =
+            '<span class="signout-icon">🚪</span> Sign Out';
+        }
+      });
+  }
+
+  // Add smooth scroll behavior for navigation
+  document.addEventListener("DOMContentLoaded", function () {
+    const navLinks = document.querySelectorAll('.nav-link[href^="/"]');
+    navLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        // Add click animation
+        this.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          this.style.transform = "";
+        }, 150);
+      });
+    });
+
+    // Add intersection observer for navbar background
+    const navbar = document.querySelector(".navbar");
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener("scroll", () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down
+        navbar.style.transform = "translateY(-100%)";
+      } else {
+        // Scrolling up
+        navbar.style.transform = "translateY(0)";
+      }
+
+      lastScrollY = currentScrollY;
+    });
+  });
+</script>
